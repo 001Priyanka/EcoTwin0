@@ -3,7 +3,7 @@
  *
  * Implements resilient HTTP transport layer conforming to EcoTwin_Shared_API_Contract.md.
  * Features:
- * - Base URL resolution from VITE_API_BASE_URL (defaults to http://localhost:3000)
+ * - Base URL resolution from VITE_API_BASE_URL (defaults to http://localhost:3001)
  * - Strict typing for GET, POST, PUT, DELETE, and generic requests
  * - JSON body serialization & safe parsing (with 204 No Content / empty body support)
  * - Request timeout via AbortController
@@ -118,7 +118,7 @@ export function getApiBaseUrl(): string {
   if (typeof envUrl === 'string' && envUrl.trim() !== '') {
     return envUrl.trim().replace(/\/+$/, '');
   }
-  return 'http://localhost:3000';
+  return 'http://localhost:3001';
 }
 
 /**

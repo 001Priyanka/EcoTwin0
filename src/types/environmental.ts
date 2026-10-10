@@ -127,3 +127,32 @@ export interface CitySummaryData {
   priorityZonesCount: number;
   governanceNote: string;
 }
+
+export interface SimulationRequest {
+  zoneId: string;
+  intervention: {
+    type: string;
+    intensity: number;
+  };
+}
+
+export interface SimulationResponse {
+  zoneId: string;
+  baselineEcoScore: number | null;
+  estimatedEcoScore: number | null;
+  estimatedChange: number | null;
+  modelType: "heuristic" | "validated";
+  assumptions: string[];
+}
+
+export interface AskEvidence {
+  field: string;
+  value: string | number | boolean | null;
+}
+
+export interface AskResponse {
+  answer: string;
+  zoneId: string | null;
+  dataStatus: DataStatus;
+  evidence: AskEvidence[];
+}
