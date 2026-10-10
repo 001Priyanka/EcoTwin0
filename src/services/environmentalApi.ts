@@ -14,7 +14,10 @@ import { zonesApi } from './zonesApi';
 import { 
   EnvironmentalZone, 
   ZoneDetails, 
-  CitySummaryData 
+  CitySummaryData,
+  SimulationRequest,
+  SimulationResponse,
+  AskResponse,
 } from '../types/environmental';
 import { 
   KOLHAPUR_ZONES_POLYGONS, 
@@ -30,6 +33,8 @@ export interface EnvironmentalApiService {
   getZoneById(id: string): Promise<ZoneDetails>;
   getCitySummary(): Promise<CitySummaryData>;
   getGeoJson(): Promise<ZonePolygonFeatureCollection>;
+  simulate(request: SimulationRequest): Promise<SimulationResponse>;
+  ask(question: string, zoneId?: string): Promise<AskResponse>;
 }
 
 export class EnvironmentalApiClient implements EnvironmentalApiService {
@@ -44,7 +49,7 @@ export class EnvironmentalApiClient implements EnvironmentalApiService {
 
   /**
    * Fetches detailed environmental telemetry for a single zone by ID.
-   * Endpoint: GET /api/zones/:id
+   * Endpoint: GET /zones/:id
    */
   public async getZoneById(id: string): Promise<ZoneDetails> {
     if (!id || typeof id !== 'string') {
@@ -68,7 +73,7 @@ export class EnvironmentalApiClient implements EnvironmentalApiService {
     }
 
     try {
-      const data = await apiClient.get<ZoneDetails | { zone: ZoneDetails }>(`/api/zones/${encodeURIComponent(id)}`);
+      const data = await apiClient.get<ZoneDetails | { zone: ZoneDetails }>(`/zones/${encodeURIComponent(id)}`);
       if (data && 'zone' in data && data.zone) {
         return data.zone;
       }
@@ -85,7 +90,7 @@ export class EnvironmentalApiClient implements EnvironmentalApiService {
 
   /**
    * Fetches composite city-wide environmental summary & global risk metrics.
-   * Endpoint: GET /api/summary
+   * Endpoint: GET /summary
    */
   public async getCitySummary(): Promise<CitySummaryData> {
     if (isDemoMode()) {
@@ -93,7 +98,7 @@ export class EnvironmentalApiClient implements EnvironmentalApiService {
     }
 
     try {
-      return await apiClient.get<CitySummaryData>('/api/summary');
+      return await apiClient.get<CitySummaryData>('/summary');
     } catch (err) {
       if (err instanceof ApiClientError && err.isNetworkError) {
         console.info('[EcoTwin API] Backend unavailable; returning demo city summary fixture.');
@@ -121,6 +126,14 @@ export class EnvironmentalApiClient implements EnvironmentalApiService {
       }
       throw err;
     }
+  }
+
+  public async simulate(request: SimulationRequest): Promise<SimulationResponse> {
+    return apiClient.post<SimulationResponse>('/simulate', request);
+  }
+
+  public async ask(question: string, zoneId?: string): Promise<AskResponse> {
+    return apiClient.post<AskResponse>('/ask', { question, zoneId });
   }
 }
 

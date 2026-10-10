@@ -7,8 +7,10 @@ import { EnvironmentalAnalytics } from '../components/dashboard/EnvironmentalAna
 import { CityMap } from '../components/map/CityMap';
 import { MOCK_PRIORITY_ZONES } from '../data/mockZones';
 import { NavigationItemId, LayerId } from '../types/environmental';
-import { Construction, ArrowLeft, RefreshCw, AlertCircle } from 'lucide-react';
+import { RefreshCw, AlertCircle } from 'lucide-react';
 import { useEnvironmentalData, ensureZoneDetails } from '../hooks/useEnvironmentalData';
+import { AskEcoTwin } from '../components/dashboard/AskEcoTwin';
+import { WhatIfSimulator } from '../components/dashboard/WhatIfSimulator';
 
 const PAGE_TITLES: Record<NavigationItemId, string> = {
   'overview': 'Overview · Environmental Digital Twin',
@@ -182,32 +184,14 @@ export default function App() {
             />
           </section>
         </div>
+      ) : activeItem === 'ask-ecotwin' ? (
+        <AskEcoTwin zones={zones} selectedZoneId={selectedZoneId} />
+      ) : activeItem === 'what-if-simulator' ? (
+        <WhatIfSimulator zones={zones} selectedZoneId={selectedZoneId} />
       ) : (
-        /* Scoped Milestone Boundary for remaining non-implemented items */
         <div className="bg-[#0D1B2E] border border-[rgba(148,163,184,0.14)] rounded-lg p-8 sm:p-12 text-center max-w-2xl mx-auto my-8">
-          <div className="w-12 h-12 rounded-full bg-[#10233A] border border-[rgba(148,163,184,0.2)] flex items-center justify-center text-amber-400 mx-auto mb-4">
-            <Construction className="w-6 h-6" />
-          </div>
-          <span className="text-xs font-mono uppercase tracking-wider text-[#22D3EE] bg-[#10233A] px-2.5 py-1 rounded border border-[rgba(34,211,238,0.2)]">
-            Milestone Boundary
-          </span>
-          <h2 className="text-xl font-bold text-[#F1F5F9] mt-3">
-            {PAGE_TITLES[activeItem].split(' · ')[0]} Module
-          </h2>
-          <p className="text-sm text-[#94A3B8] mt-2 leading-relaxed">
-            This module is reserved for subsequent implementation milestones (such as AI integrations or scenario simulation engines). 
-            Active foundation, MapLibre basemap, and environmental GeoJSON overlays are functional under <strong>Overview</strong> and <strong>City Map</strong>.
-          </p>
-          <div className="mt-6 flex justify-center">
-            <button
-              type="button"
-              onClick={() => setActiveItem('overview')}
-              className="inline-flex items-center gap-2 px-4 py-2 text-xs font-semibold text-white bg-[#2563EB] hover:bg-blue-600 rounded-md transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-[#2563EB]"
-            >
-              <ArrowLeft className="w-4 h-4" />
-              Return to Overview
-            </button>
-          </div>
+          <h2 className="text-xl font-bold text-[#F1F5F9]">{PAGE_TITLES[activeItem].split(' · ')[0]} Module</h2>
+          <p className="text-sm text-[#94A3B8] mt-2">Settings are not connected to a backend contract yet.</p>
         </div>
       )}
     </DashboardLayout>
