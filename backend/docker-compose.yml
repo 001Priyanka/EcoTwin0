@@ -1,0 +1,35 @@
+version: '3.8'
+
+services:
+  # ---------------------------------------------------------------------------
+  # Local DynamoDB instance with persistent storage
+  # ---------------------------------------------------------------------------
+  dynamodb-local:
+    image: amazon/dynamodb-local:latest
+    container_name: ecotwin-dynamodb-local
+    restart: always
+    ports:
+      - "8000:8000"
+    command: "-jar DynamoDBLocal.jar -sharedDb -dbPath /home/dynamodblocal/data"
+    volumes:
+      - dynamodb-data:/home/dynamodblocal/data
+    working_dir: /home/dynamodblocal
+
+  # ---------------------------------------------------------------------------
+  # Visual Web GUI to inspect and edit DynamoDB items directly in your browser
+  # Accessible at: http://localhost:8001
+  # ---------------------------------------------------------------------------
+  dynamodb-admin:
+    image: aaronshaf/dynamodb-admin:latest
+    container_name: ecotwin-dynamodb-admin
+    restart: always
+    ports:
+      - "8001:8001"
+    environment:
+      - DYNAMO_ENDPOINT=http://dynamodb-local:8000
+      - AWS_REGION=ap-south-1
+    depends_on:
+      - dynamodb-local
+
+volumes:
+  dynamodb-data:

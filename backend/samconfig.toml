@@ -1,0 +1,24 @@
+# AWS SAM CLI configuration file for EcoTwin — Kolhapur backend.
+# Generated values will be saved here after the first `sam deploy --guided` run.
+# Commit this file so team members can deploy with `sam deploy` (no --guided needed).
+
+version = 0.1
+
+[default]
+[default.global.parameters]
+stack_name = "ecotwin-kolhapur-backend"
+
+[default.build.parameters]
+cached = true
+parallel = true
+
+[default.deploy.parameters]
+stack_name        = "ecotwin-kolhapur-backend"
+s3_prefix         = "ecotwin-kolhapur-backend"
+region            = "ap-south-1"
+confirm_changeset = true
+capabilities      = "CAPABILITY_IAM"
+parameter_overrides = "EnvironmentStage=dev"
+# Set resolve_s3 = true if you don't want to manage a deployment bucket manually.
+# SAM will create and manage one for you.
+resolve_s3 = true

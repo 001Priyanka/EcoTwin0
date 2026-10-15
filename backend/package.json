@@ -1,0 +1,34 @@
+{
+  "name": "ecotwin-kolhapur-backend",
+  "version": "1.0.0",
+  "description": "EcoTwin — Kolhapur serverless backend: AWS SAM / Lambda / API Gateway / DynamoDB",
+  "main": "dist/src/handlers/health.js",
+  "scripts": {
+    "build": "tsc",
+    "watch": "tsc -w",
+    "test": "node --test dist/tests/*.test.js",
+    "test:ts": "tsc && node --test dist/tests/*.test.js",
+    "seed": "tsc && node dist/src/data-access/seedZones.js",
+    "db:init": "tsc && node dist/src/data-access/initLocalDb.runner.mjs",
+    "sam:build": "npm run build && sam build",
+    "sam:deploy": "npm run build && sam build && sam deploy --guided"
+  },
+  "keywords": [
+    "aws-lambda",
+    "sam",
+    "ecotwin",
+    "kolhapur",
+    "serverless"
+  ],
+  "author": "EcoTwin Engineering Team",
+  "license": "ISC",
+  "dependencies": {
+    "@aws-sdk/client-dynamodb": "^3.758.0",
+    "@aws-sdk/lib-dynamodb": "^3.758.0"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.147",
+    "@types/node": "^22.13.8",
+    "typescript": "^5.7.3"
+  }
+}

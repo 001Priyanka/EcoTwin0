@@ -1,0 +1,202 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: >
+  EcoTwin — Kolhapur Serverless Backend
+  AWS SAM template provisioning API Gateway, AWS Lambda handlers, and DynamoDB storage.
+
+Globals:
+  Function:
+    Timeout: 10
+    MemorySize: 256
+    Runtime: nodejs20.x
+    Architectures:
+      - x86_64
+    Environment:
+      Variables:
+        NODE_OPTIONS: "--enable-source-maps"
+        AWS_NODEJS_CONNECTION_REUSE_ENABLED: "1"
+        ZONES_TABLE_NAME: !Ref ZonesTable
+        ENVIRONMENT_STAGE: !Ref EnvironmentStage
+  Api:
+    Cors:
+      AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+      AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+      AllowOrigin: "'*'"
+      MaxAge: "'600'"
+
+Parameters:
+  EnvironmentStage:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+    Description: Deployment stage environment
+
+Resources:
+  # =========================================================================
+  # HTTP API Gateway (REST API)
+  # =========================================================================
+  EcoTwinApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      StageName: !Ref EnvironmentStage
+      Description: EcoTwin Kolhapur Serverless REST API
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,X-Amz-Date,Authorization,X-Api-Key,X-Amz-Security-Token'"
+        AllowOrigin: "'*'"
+        MaxAge: "'600'"
+
+  # =========================================================================
+  # Lambda Functions
+  # =========================================================================
+  HealthFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/src/handlers/health.handler
+      Description: Returns health status of the EcoTwin Kolhapur backend service
+      Events:
+        HealthApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EcoTwinApi
+            Path: /health
+            Method: get
+
+  GetZonesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/src/handlers/getZones.handler
+      Description: Retrieves all environmental zones and risk assessments from DynamoDB
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ZonesTable
+      Events:
+        GetZonesApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EcoTwinApi
+            Path: /zones
+            Method: get
+
+  GetZoneByIdFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/src/handlers/getZoneById.handler
+      Description: Retrieves detailed environmental telemetry for a single zone by ID
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ZonesTable
+      Events:
+        GetZoneByIdApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EcoTwinApi
+            Path: /zones/{zoneId}
+            Method: get
+
+  GetPriorityZonesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/src/handlers/getPriorityZones.handler
+      Description: Retrieves prioritized environmental zones ranked by vulnerability
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ZonesTable
+      Events:
+        GetPriorityZonesApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EcoTwinApi
+            Path: /priority-zones
+            Method: get
+
+  SimulateFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/src/handlers/simulate.handler
+      Description: Runs heuristic scenario simulation for what-if urban interventions
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ZonesTable
+      Events:
+        SimulateApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EcoTwinApi
+            Path: /simulate
+            Method: post
+
+  AskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: ./
+      Handler: dist/src/handlers/ask.handler
+      Description: Answers natural language environmental questions grounded in DynamoDB telemetry
+      Policies:
+        - DynamoDBReadPolicy:
+            TableName: !Ref ZonesTable
+      Events:
+        AskApi:
+          Type: Api
+          Properties:
+            RestApiId: !Ref EcoTwinApi
+            Path: /ask
+            Method: post
+
+  # =========================================================================
+  # DynamoDB Storage Tables
+  # =========================================================================
+  ZonesTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub "ecotwin-zones-${EnvironmentStage}"
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: zoneId
+          AttributeType: S
+      KeySchema:
+        - AttributeName: zoneId
+          KeyType: HASH
+      PointInTimeRecoverySpecification:
+        PointInTimeRecoveryEnabled: true
+      SSESpecification:
+        SSEEnabled: true
+      Tags:
+        - Key: Project
+          Value: EcoTwin-Kolhapur
+        - Key: Environment
+          Value: !Ref EnvironmentStage
+
+Outputs:
+  EcoTwinApiUrl:
+    Description: "Base URL of the EcoTwin API Gateway stage"
+    Value: !Sub "https://${EcoTwinApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentStage}/"
+  HealthEndpointUrl:
+    Description: "Health Check API URL"
+    Value: !Sub "https://${EcoTwinApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentStage}/health"
+  ZonesEndpointUrl:
+    Description: "Zones API URL"
+    Value: !Sub "https://${EcoTwinApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentStage}/zones"
+  ZoneByIdEndpointUrl:
+    Description: "Zone Details API URL pattern"
+    Value: !Sub "https://${EcoTwinApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentStage}/zones/{zoneId}"
+  PriorityZonesEndpointUrl:
+    Description: "Priority Zones API URL"
+    Value: !Sub "https://${EcoTwinApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentStage}/priority-zones"
+  SimulateEndpointUrl:
+    Description: "Scenario Simulation API URL"
+    Value: !Sub "https://${EcoTwinApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentStage}/simulate"
+  AskEndpointUrl:
+    Description: "Ask EcoTwin Q&A API URL"
+    Value: !Sub "https://${EcoTwinApi}.execute-api.${AWS::Region}.amazonaws.com/${EnvironmentStage}/ask"
+  ZonesTableName:
+    Description: "DynamoDB table name for environmental zones"
+    Value: !Ref ZonesTable
