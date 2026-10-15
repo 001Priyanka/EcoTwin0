@@ -1,6 +1,0 @@
-{
-  "name": "EcoTwin — Kolhapur",
-  "description": "Environmental intelligence digital twin for Kolhapur, monitoring air quality, urban heat, and waste management risks.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}
